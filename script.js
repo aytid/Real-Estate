@@ -1,10 +1,9 @@
-// Navbar scroll effect
-const navbar = document.getElementById('navbar');
+const header = document.getElementById('header');
 window.addEventListener('scroll', () => {
     if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
+        header.classList.add('scrolled');
     } else {
-        navbar.classList.remove('scrolled');
+        header.classList.remove('scrolled');
     }
 });
 
@@ -27,7 +26,7 @@ mobileLinks.forEach(link => link.addEventListener('click', toggleMenu));
 
 // Active nav link on scroll
 const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('.nav-link');
+const navLinks = document.querySelectorAll('.main-nav a');
 
 window.addEventListener('scroll', () => {
     let current = '';
@@ -45,28 +44,38 @@ window.addEventListener('scroll', () => {
     });
 });
 
-// Scroll animations
+// Scroll animations with IntersectionObserver
 const fadeElements = document.querySelectorAll('.fade-up');
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('visible');
+            // Optional: unobserve after animation
+            // observer.unobserve(entry.target);
         }
     });
-}, { threshold: 0.1 });
+}, observerOptions);
 
 fadeElements.forEach(el => observer.observe(el));
 
-// Form submission
+// Contact form submission
 document.getElementById('contactForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const btn = this.querySelector('.form-submit');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = 'Thank you! We\'ll contact you soon.';
+    const btn = this.querySelector('.btn-submit');
+    const originalText = btn.textContent;
+    btn.textContent = 'Thank you! We wll contact you soon.';
     btn.style.background = '#2d5a4a';
+    btn.disabled = true;
+    
     setTimeout(() => {
-        btn.innerHTML = originalText;
+        btn.textContent = originalText;
         btn.style.background = '';
+        btn.disabled = false;
         this.reset();
     }, 3000);
 });
@@ -80,4 +89,60 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
+});
+
+// Parallax effect for hero background
+window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const heroBg = document.querySelector('.hero-bg img');
+    if (heroBg && scrolled < window.innerHeight) {
+        heroBg.style.transform = `translateY(${scrolled * 0.3}px) scale(${1 + scrolled * 0.0002})`;
+    }
+});
+
+// Add typing effect to hero tagline (optional enhancement)
+function typeWriter(element, text, speed = 50) {
+    let i = 0;
+    element.textContent = '';
+    function type() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    type();
+}
+
+// Initialize typing effect when hero is visible
+const heroTagline = document.querySelector('.hero-tagline');
+if (heroTagline) {
+    const originalText = heroTagline.textContent;
+    const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                typeWriter(heroTagline, originalText, 60);
+                heroObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    heroObserver.observe(heroTagline);
+}
+// Enhanced form submission with loading state
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    const btn = this.querySelector('.btn-submit');
+    const originalHTML = btn.innerHTML;
+    
+    // Show loading state
+    btn.innerHTML = '<span>Sending...</span>';
+    btn.disabled = true;
+    btn.style.opacity = '0.8';
+    
+    // Let the form submit naturally to FormSubmit
+    // The _next parameter handles redirect
+    setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }, 2000);
 });
